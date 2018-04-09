@@ -1,109 +1,102 @@
 package main
 
 import (
-    "log"
-    "github.com/cihub/seelog"
-    "go.uber.org/zap/zapcore"
-    "go.uber.org/zap"
-    "github.com/sirupsen/logrus"
-    "github.com/golang/glog"
+    "github.com/hirnag/testgo-logs/logwrapper/def"
+    "github.com/hirnag/testgo-logs/logwrapper/zap"
+    "github.com/hirnag/testgo-logs/logwrapper/seelog"
+    "github.com/hirnag/testgo-logs/logwrapper/glog"
+    "github.com/hirnag/testgo-logs/logwrapper/logrus"
 
-    "time"
-    "flag"
-    "os"
+    "fmt"
 )
 
-var zaplog *zap.Logger
+var deflogger def.Logger
+var zaplogger zap.Logger
+var seelogger seelog.Logger
+var glogger glog.Logger
+var lrlogger logrus.Logger
+var bigv string = "Hello from "
 
 func main() {
 
     // -- log output setting for personal
+    Setup()
 
     // -- hello logs
     helloDefault()
     helloGlog()
-    helloZap()
     helloLogrus()
+    helloZap()
     helloSeelog()
 
-    // with parameter
-    //url := "http://example.com"
-    //num := 10
-    //tim := time.Now().UnixNano()
-    //helloZapWithParam(url, num, tim)
-    //helloLogrusWithParam(url, num, tim)
 }
 
-func init() {
-    // -- log output setting
-    //writer = &bytes.Buffer{}
-    //log1, _ := os.Open("log1.log")
-    //defer log1.Close()
-    //writer = io.MultiWriter(log1)
-    writer := os.Stdout
+func Setup() {
 
-    log.SetOutput(writer)
-    flag.Parse()
-    logrus.SetOutput(writer)
-    logrus.SetFormatter(&logrus.JSONFormatter{})
-    logrus.SetLevel(logrus.DebugLevel)
-    zapconf := zap.Config{
-        Level: zap.NewAtomicLevelAt(zapcore.DebugLevel),
-        Encoding: "json",
-        EncoderConfig: zapcore.EncoderConfig{
-            TimeKey:        "Time",
-            LevelKey:       "Level",
-            NameKey:        "Name",
-            CallerKey:      "Caller",
-            MessageKey:     "Msg",
-            StacktraceKey:  "St",
-            EncodeLevel:    zapcore.CapitalLevelEncoder,
-            EncodeTime:     zapcore.ISO8601TimeEncoder,
-            EncodeDuration: zapcore.StringDurationEncoder,
-            EncodeCaller:   zapcore.ShortCallerEncoder,
-        },
-        OutputPaths: []string{"stdout"},
-        ErrorOutputPaths: []string{"stderr"},
+    // logger initialize with to wrapped
+    deflogger = def.New()
+    glogger = glog.New()
+    lrlogger = logrus.New()
+    zaplogger = zap.New()
+    seelogger = seelog.New()
+
+    for i := 0; i < 50; i++ {
+        bigv += "qazwsxedcrfvtgbyhnuj"
     }
-    zaplog, _ = zapconf.Build()
-    zaplog, _ = zap.NewDevelopment()
+    fmt.Println(len(bigv))
 }
 
+// default logging
 func helloDefault() {
-    log.Println("Hello from default log")
+    deflogger.Info("Hello from default log")
+}
+func bigvalueDefault() {
+    deflogger.Info(bigv)
 }
 
+// glog
 func helloGlog() {
-    glog.Error("Hello from Glog")
+    glogger.Error("Hello from Glog")
+}
+func bigvalueGlog() {
+    glogger.Error(bigv)
 }
 
+// logrus
 func helloLogrus() {
-    logrus.WithFields(logrus.Fields{
-    }).Error("Hello from Logrus")
+    lrlogger.Info("Hello from Logrus")
 }
-func helloLogrusWithParam(url string, num int, tim int64) {
-    logrus.WithFields(logrus.Fields{
-        "url": url,
-        "num":   num,
-        "time":   tim,
-    }).Error("Hello from Logrus")
+func bigvalueLogrus() {
+    lrlogger.Info(bigv)
 }
 
+// zap
 func helloZap() {
-    zaplog, _ = zap.NewProduction()
-    zaplog.Error("Hello from Zap",
-    )
+    zaplogger.Info("Hello from Zap")
 }
-func helloZapWithParam(url string, num int, tim int64) {
-    zaplog.Error("Hello from Zap",
-        zap.String("url", url),
-        zap.Int("num", num),
-        zap.Duration("time", time.Duration(tim)),
-    )
+func bigvalueZap() {
+    zaplogger.Info(bigv)
 }
 
+// seelog
 func helloSeelog() {
-    defer seelog.Flush()
-    seelog.Error("Hello from Seelog")
+    seelogger.Error("Hello from Seelog")
+}
+func bigvalueSeelog() {
+    seelogger.Error(bigv)
 }
 
+//func helloLogrusWithParam(url string, num int, tim int64) {
+//    logrus.WithFields(logrus.Fields{
+//        "url": url,
+//        "num":   num,
+//        "time":   tim,
+//    }).Error("Hello from Logrus")
+//}
+//func helloZapWithParam(url string, num int, tim int64) {
+//    zaplog.Error("Hello from Zap",
+//        zap.String("url", url),
+//        zap.Int("num", num),
+//        zap.Duration("time", time.Duration(tim)),
+//    )
+//}
